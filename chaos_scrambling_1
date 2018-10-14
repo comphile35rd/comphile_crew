@@ -1,0 +1,91 @@
+#include <stdio.h>
+#define WIDTH 1024
+#define HEIGHT 768
+#define HEADER 54
+
+bool use_first_array=true;
+unsigned char R[2][HEIGHT][WIDTH],G[2][HEIGHT][WIDTH],B[2][HEIGHT][WIDTH];
+
+FILE *fp1 = fopen("1024768.bmp","rb");
+FILE *fp2 = fopen("1024768new.bmp","wb");
+
+void chaos_1(int num)  //  fold  (접다가 펴는거 좌우로 하는거)
+{
+    if(num==0) return ;
+    for(int i=0;i<HEIGHT;i++)
+        for(int j=0;j<WIDTH;j++)
+    {
+        int a=((HEIGHT-1)/2>=i)? (2*i) : (2*(HEIGHT-i)-1);
+        B[(use_first_array?1:0)][a][j]=B[(use_first_array?0:1)][i][j];
+        G[(use_first_array?1:0)][a][j]=G[(use_first_array?0:1)][i][j];
+        R[(use_first_array?1:0)][a][j]=R[(use_first_array?0:1)][i][j];
+    }  // scrambling (카오스 변환 실행)
+
+    (use_first_array) ? (use_first_array=false) : (use_first_array=true);
+    return chaos_1(num-1);
+}
+
+void chaos_2(int num)  //faled-comes back to original from when chos_2()function acts 11times.(실패작 - 주기가 11번)
+{
+    if(num==0) return ;
+    for(int i=0;i<HEIGHT;i++)
+        for(int j=0;j<WIDTH;j++)
+    {
+        int a=((WIDTH-1)/2>=j)? (2*j) : (2*(WIDTH-j)-1);
+        B[(use_first_array?1:0)][i][a]=B[(use_first_array?0:1)][i][j];
+        G[(use_first_array?1:0)][i][a]=G[(use_first_array?0:1)][i][j];
+        R[(use_first_array?1:0)][i][a]=R[(use_first_array?0:1)][i][j];
+    }  // scrambling (카오스 변환 실행)
+    (use_first_array) ? (use_first_array=false) : (use_first_array=true);
+    return chaos_2(num-1);
+}
+
+void chaos_3(int num)
+{
+    if(num==0) return ;
+    for(int i=0;i<HEIGHT;i++)
+        for(int j=0;j<WIDTH;j++)
+    {
+        
+    }
+}
+
+void make_new_file()
+{
+    for(int i=0;i<HEIGHT;i++)
+        for(int j=0;j<WIDTH;j++)
+    {
+        putc(B[(use_first_array?0:1)][i][j], fp2);
+        putc(G[(use_first_array?0:1)][i][j], fp2);
+        putc(R[(use_first_array?0:1)][i][j], fp2);
+    }
+    return ;
+}
+
+int main()
+{
+    int i, j, n1, n2;
+    printf ("how many times with chaos_1? : ");
+    scanf ("%d", &n1);
+    printf ("how many times with chaos_2?  : ");
+    scanf ("%d", &n2);
+    for(i=0; i<HEADER; i++)   //1024*768 24bit copying header data (헤더데이터 복사해넣기)
+        putc(getc(fp1), fp2);
+
+    for(i=0; i<HEIGHT; i++)   //copying color data to memory (색 데이터 메모리로 읽기)
+        for(j=0; j<WIDTH; j++)
+        {
+            B[0][i][j]=getc(fp1);
+            G[0][i][j]=getc(fp1);
+            R[0][i][j]=getc(fp1);
+        }
+
+
+    chaos_1(n1);
+
+    chaos_2(n2);
+
+    make_new_file();
+
+    return 0;
+}
